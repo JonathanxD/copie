@@ -10,6 +10,8 @@
 
 **copie** works by copying the file specified as first argument into the file specified in `COPIE_TO` environment variable, however, when `COPIE_FROM` is specified, the data of the file specified by this environment variable is copied into the file specified as first argument. And when both `COPIE_FROM` and `COPIE_TO` environment variables are set, the contents of the file of the first one is copied into the file of the second one.
 
+Since 0.2.0, contents to write in the file could be specified in `COPIE_FROM_STRING` environment variable.
+
 ## Usage
 
 Copies from `hello` to a new file `test`.
@@ -38,6 +40,18 @@ $ echo 'Hello world' > hello
 $ touch test
 $ echo 'Hello world 2' > test
 $ COPIE_FROM=test COPIE_TO=hello copie 
+```
+
+Write `copie` string into `hello`.
+
+```fish
+$ COPIE_FROM_STRING=copie COPIE_TO=hello copie 
+```
+
+Write `copie` string into `hello`.
+
+```fish
+$ COPIE_FROM_STRING=copie copie hello
 ```
 
 ## Practical use
