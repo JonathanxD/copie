@@ -97,11 +97,11 @@ fn main() {
     let exit_code_as_int = if let Ok(code) = exit_code {
         code.parse::<i32>().map_err(|e| format!("{:?}", e))
     } else {
-        exit_code.err().unwrap()
+        Err(exit_code.err().unwrap())
     };
 
     std::process::exit(match run_app() {
-        Ok(_) => exit_code_as_int.unwrap_or_else(0),
+        Ok(_) => exit_code_as_int.unwrap_or(0),
         Err(err) => {
             eprintln!("error: {:?}", err);
             -1
