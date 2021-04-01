@@ -111,7 +111,7 @@ fn main() {
 
 fn run_app() -> Result<(), String> {
     let matches = App::new("copie")
-        .version("1.0")
+        .version("0.2.0")
         .author("Jonathan H. R. Lopes <jhrldev@gmail.com>")
         .about("Copies data from or to specified file.\nPaths must be specified as environment variables: COPIE_FROM specifies the file to copy from and COPIE_TO specifies the file to copy to.\nWhen COPIE_TO is combined with an input file specified as first argument, the content of the file specified in argument is copied to the file specified in COPIE_TO environment variable.\nWhen COPIE_FROM is combined with an input file specified as first argument, the content of the file specified in COPIE_FROM is copied to the file specified as first argument.\nWhen COPIE_FROM is combined with COPIE_TO, the file specified in the first one is copied to the file specified in the second one.")
         .arg(Arg::new("FILE")
@@ -123,9 +123,18 @@ fn run_app() -> Result<(), String> {
     let file_to_read_or_replace =  matches.value_of("FILE").map(|i| i.to_string()).map(|i| PathBuf::from(i));
     let from_var = env::var("COPIE_FROM").map(|i| PathBuf::from(i));
     let to_var = env::var("COPIE_TO").map(|i| PathBuf::from(i));
+    let from_str_var = env::var("COPIE_FROM_STRING");
 
     if from_var.is_ok() && to_var.is_ok() && file_to_read_or_replace.is_some() {
         return Err(format!("COPIE_FROM, COPIE_TO and a file parameter was specified, copie could not copy because it is impossible to determine which file is to copy from or to."))
+    }
+
+    if from_var.is_ok() && from_str_var.is_ok() {
+        return Err(format!("COPIE_FROM_STRING and COPIE_FROM was specified, one only source should be specified."))
+    }
+
+    if from_str_var.is_ok() && to_var.is_ok() && file_to_read_or_replace.is_some() {
+        return Err(format!("COPIE_FROM_STRING, COPIE_TO and a file parameter was specified, copie could not determine the file or resource to copy from."))
     }
 
     let from_path = if let Ok(from) = from_var {
@@ -137,6 +146,12 @@ fn run_app() -> Result<(), String> {
             return Err(format!("Path '{}' specified in variable COPIE_FROM is a directory, COPEE does not copy directories!", from.to_string_lossy()))
         }
 
+        Some(from)
+    } else {
+        None
+    };
+
+    let from_str = if let Ok(from) = from_str_var {
         Some(from)
     } else {
         None
@@ -174,6 +189,23 @@ fn run_app() -> Result<(), String> {
         return Ok(());
     }
 
+    if from_str.is_some() && to_path.is_some() {
+        let from = from_str.unwrap();
+        let to = to_path.unwrap();
+
+        if to.exists() {
+            return Err(format!("Path '{}' specified in COPIE_TO already exists, COPEE does not replace files.", to.to_string_lossy()))
+        }
+
+        let result = fs::write(to.clone(), from.clone());
+
+        if let Err(err) = result {
+            return Err(format!("Failed write string '{}' to '{}': {:?}", from, to.to_string_lossy(), err))
+        }
+
+        return Ok(());
+    }
+
     let file_to_read_or_replace_path =
         if let Some(file) = file_to_read_or_replace {
 
@@ -198,6 +230,19 @@ fn run_app() -> Result<(), String> {
 
         if let Err(err) = result {
             return Err(format!("Failed to copy from '{}' to '{}': {:?}", from.to_string_lossy(), target.to_string_lossy(), err))
+        }
+
+        return Ok(());
+    }
+
+    if from_str.is_some() && file_to_read_or_replace_path.is_some() {
+        let from = from_str.unwrap();
+        let target = file_to_read_or_replace_path.unwrap();
+
+        let result = fs::write(target.clone(), from.clone());
+
+        if let Err(err) = result {
+            return Err(format!("Failed to write string contents '{}' to '{}': {:?}", from, target.to_string_lossy(), err))
         }
 
         return Ok(());
