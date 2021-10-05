@@ -1,6 +1,6 @@
 [package]
 name = "copie"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["JonathanxD <jhrldev@gmail.com>"]
 license = "MIT"
 description = "Copies file from or to paths specified in environment variables and command-line."
