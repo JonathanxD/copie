@@ -6,6 +6,12 @@
 
 **copie** a simple tool used by [Dracon IntelliJ Plugin](https://nest.pijul.com/Jonathan/Dracon) to copy content of files that should be opened in an editor through *$EDITOR* or *$VISUAL* application to a separated file, allowing them to be inspected and modified without sacrificing integration.
 
+## Install
+
+```shell
+nix-env -f https://github.com/JonathanxD/copie/archive/master.tar.gz -iA copie
+```
+
 ## How does copie works?
 
 **copie** works by copying the file specified as first argument into the file specified in `COPIE_TO` environment variable, however, when `COPIE_FROM` is specified, the data of the file specified by this environment variable is copied into the file specified as first argument. And when both `COPIE_FROM` and `COPIE_TO` environment variables are set, the contents of the file of the first one is copied into the file of the second one.
